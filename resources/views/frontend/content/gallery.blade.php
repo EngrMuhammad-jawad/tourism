@@ -1,0 +1,5 @@
+@extends('layouts.app')
+@section('title', 'Gallery | UAE Tourism')
+@section('content')
+<section class="bg-deepblack pb-14 pt-36 text-white"><div class="container mx-auto px-6"><p class="text-sm font-semibold uppercase tracking-[.2em] text-gold">In pictures</p><h1 class="mt-3 text-4xl font-bold">Gallery</h1></div></section><section class="py-14"><div class="container mx-auto px-6"><div class="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">@forelse($albums as $album)<article class="overflow-hidden rounded-2xl bg-white shadow"><img class="h-64 w-full object-cover" src="{{ $album->getFirstMediaUrl('images') ?: asset('assets/images/hero.jpg') }}" alt="{{ $album->name }}"><div class="p-5"><h2 class="text-xl font-bold">{{ $album->name }}</h2><p class="mt-2 text-gray-600">{{ $album->description }}</p></div></article>@empty <p class="col-span-full py-16 text-center text-gray-500">Gallery images will be added soon.</p>@endforelse</div><div class="mt-8">{{ $albums->links() }}</div></div></section>
+@endsection

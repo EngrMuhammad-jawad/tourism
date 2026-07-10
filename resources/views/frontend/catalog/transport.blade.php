@@ -1,0 +1,5 @@
+@extends('layouts.app')
+@section('title', $transport->name.' | UAE Tourism')
+@section('content')
+<section class="pt-32"><div class="container mx-auto max-w-3xl px-6 py-16"><p class="font-semibold uppercase tracking-wide text-gold">{{ $transport->type->value }}</p><h1 class="mt-3 text-5xl font-bold">{{ $transport->name }}</h1><p class="mt-6 text-lg text-gray-600">{{ $transport->description }}</p><div class="mt-8 grid gap-4 sm:grid-cols-2"><div class="rounded-xl bg-white p-5 shadow"><p class="text-sm text-gray-500">Capacity</p><p class="mt-1 text-2xl font-bold">{{ $transport->capacity }} guests</p></div><div class="rounded-xl bg-white p-5 shadow"><p class="text-sm text-gray-500">Price</p><p class="mt-1 text-2xl font-bold text-gold">${{ number_format((float) $transport->price, 2) }}</p></div></div><a href="{{ route('bookings.create', ['type' => 'transport', 'id' => $transport->id]) }}" class="mt-8 inline-block rounded-lg bg-deepblack px-7 py-3 font-bold text-white hover:bg-gold hover:text-deepblack">Reserve transport</a></div></section>
+@endsection
