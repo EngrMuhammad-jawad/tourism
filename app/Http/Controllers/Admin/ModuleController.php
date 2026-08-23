@@ -150,7 +150,16 @@ class ModuleController extends Controller
             unset($data['password']);
         }
         foreach (method_exists($record, 'getTranslatableAttributes') ? $record->getTranslatableAttributes() : [] as $field) {
-            if (array_key_exists($field, $data)) {
+            $translations = [];
+            foreach (array_keys(config('localization.supported')) as $locale) {
+                $inputName = "{$field}_{$locale}";
+                if ($request->has($inputName)) {
+                    $translations[$locale] = $request->input($inputName);
+                }
+            }
+            if (! empty($translations)) {
+                $data[$field] = $translations;
+            } elseif (array_key_exists($field, $data) && is_string($data[$field])) {
                 $data[$field] = collect(config('localization.supported'))->keys()->mapWithKeys(fn ($locale) => [$locale => $data[$field]])->all();
             }
         }

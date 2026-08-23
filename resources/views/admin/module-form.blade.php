@@ -30,12 +30,33 @@
                 if (is_array($value)) $value = json_encode($value);
                 if ($value instanceof \DateTimeInterface) $value = $isDate ? $value->format('Y-m-d') : $value->format('Y-m-d\\TH:i');
             @endphp
-            <div @class(['md:col-span-2' => $isLong || $isBoolean])>
+            <div @class(['md:col-span-2' => $isLong || $isBoolean || in_array($field, $translatable, true)])>
                 @if($isBoolean)
                     <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/50 p-4 transition-all duration-200 hover:bg-slate-50 hover:border-slate-300">
                         <input type="checkbox" name="{{ $field }}" value="1" @checked(old($field, $record->getAttribute($field))) class="h-5 w-5 rounded border-slate-300 text-gold focus:ring-gold/30 focus:ring-offset-0">
                         <span class="font-semibold text-slate-700">{{ $label }}</span>
                     </label>
+                @elseif(in_array($field, $translatable, true))
+                    <div class="rounded-xl border border-slate-200 bg-slate-50/30 p-4 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-200/60 pb-2">
+                            <label class="text-sm font-bold text-slate-800 tracking-wide">{{ $label }} <span class="text-xs font-normal text-gold uppercase ms-1">(Multilingual)</span> @if($isRequired)<span class="text-red-600">*</span>@endif</label>
+                        </div>
+                        <div class="grid gap-3 md:grid-cols-3">
+                            @foreach(config('localization.supported') as $loc => $meta)
+                                @php
+                                    $locVal = old("{$field}_{$loc}", $record->exists ? $record->getTranslation($field, $loc, false) : '');
+                                @endphp
+                                <div>
+                                    <span class="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ $meta['native'] }} ({{ strtoupper($loc) }})</span>
+                                    @if($isLong)
+                                        <textarea id="{{ $field }}_{{ $loc }}" name="{{ $field }}_{{ $loc }}" rows="3" dir="{{ $meta['dir'] }}" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-gold focus:ring-2 focus:ring-gold/20 focus:outline-none transition-all" @if($loc === 'en' && $isRequired) required @endif>{{ $locVal }}</textarea>
+                                    @else
+                                        <input id="{{ $field }}_{{ $loc }}" name="{{ $field }}_{{ $loc }}" type="text" value="{{ $locVal }}" dir="{{ $meta['dir'] }}" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-gold focus:ring-2 focus:ring-gold/20 focus:outline-none transition-all" @if($loc === 'en' && $isRequired) required @endif>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 @else
                     <label for="{{ $field }}" class="mb-2 block text-sm font-semibold text-slate-700 tracking-wide">{{ $label }} @if($isRequired)<span class="text-red-600">*</span>@endif</label>
                     @if($isLong)
@@ -44,7 +65,6 @@
                         <input id="{{ $field }}" name="{{ $field }}" type="{{ $field === 'password' ? 'password' : ($isDate ? 'date' : ($isNumber ? 'number' : ($field === 'email' ? 'email' : 'text'))) }}" value="{{ $field === 'password' ? '' : $value }}" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 placeholder-slate-400 shadow-sm focus:border-gold focus:bg-white focus:ring-4 focus:ring-gold/20 focus:outline-none transition-all duration-200" @required($isRequired) @if($isNumber) step="any" @endif>
                     @endif
                     @error($field)<p class="mt-1 text-sm text-red-600 font-medium">{{ $message }}</p>@enderror
-                    @if(in_array($field, $translatable, true))<p class="mt-1.5 text-xs text-slate-400 font-medium">This value will be saved for all supported languages. You can localize it later.</p>@endif
                 @endif
             </div>
         @endforeach

@@ -41,4 +41,12 @@ class Room extends Model implements HasMedia
     {
         return $this->morphMany(Booking::class, 'bookable');
     }
+
+    /**
+     * Accessor for polymorphic bookable price.
+     */
+    public function getPriceAttribute(): float
+    {
+        return (float) $this->price_per_night;
+    }
 }

@@ -19,7 +19,56 @@ class ContentController extends Controller
 {
     public function gallery()
     {
-        return view('frontend.content.gallery', ['albums' => Album::active()->with('media')->orderBy('sort_order')->paginate(12)]);
+        $albums = Album::active()->with('media')->orderBy('sort_order')->paginate(12);
+        $videos = \App\Models\GalleryVideo::where('status', true)->orderBy('sort_order')->get();
+
+        return view('frontend.content.gallery', compact('albums', 'videos'));
+    }
+
+    public function album(Album $album)
+    {
+        abort_unless($album->status, 404);
+        $album->load('media');
+        $videos = \App\Models\GalleryVideo::where('album_id', $album->id)->where('status', true)->get();
+
+        return view('frontend.content.album', compact('album', 'videos'));
+    }
+
+    public function uploadGalleryMedia(Request $request)
+    {
+        $request->validate([
+            'media_type' => ['required', 'in:photo,video'],
+            'title' => ['required', 'string', 'max:255'],
+            'photo' => ['required_if:media_type,photo', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'video_url' => ['required_if:media_type,video', 'nullable', 'string', 'max:500'],
+        ]);
+
+        $album = Album::firstOrCreate(
+            ['slug' => 'traveler-submissions'],
+            [
+                'name' => ['en' => 'Traveler Submissions'],
+                'description' => ['en' => 'Photos and videos submitted by travelers.'],
+                'status' => true,
+                'sort_order' => 99,
+            ]
+        );
+
+        if ($request->media_type === 'photo' && $request->hasFile('photo')) {
+            $album->addMediaFromRequest('photo')->toMediaCollection('images');
+        } elseif ($request->media_type === 'video' && $request->filled('video_url')) {
+            $url = $request->input('video_url');
+            if (str_contains($url, 'watch?v=')) {
+                $url = str_replace('watch?v=', 'embed/', $url);
+            }
+            \App\Models\GalleryVideo::create([
+                'album_id' => $album->id,
+                'title' => ['en' => $request->input('title')],
+                'video_url' => $url,
+                'status' => true,
+            ]);
+        }
+
+        return back()->with('success', 'Thank you! Your media has been uploaded and added to the gallery.');
     }
 
     public function testimonials()

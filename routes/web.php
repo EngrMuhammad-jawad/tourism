@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
+Route::get('/sitemap.xml', [\App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
+
 Route::get('/', function (Request $request) {
     $supported = array_keys(config('localization.supported'));
 
@@ -45,6 +47,7 @@ Route::prefix('{locale}')
         Route::get('transport', [CatalogController::class, 'transports'])->name('transports.index');
         Route::get('transport/{transport}', [CatalogController::class, 'transport'])->name('transports.show');
         Route::get('gallery', [ContentController::class, 'gallery'])->name('gallery.index');
+        Route::get('gallery/{album:slug}', [ContentController::class, 'album'])->name('gallery.show');
         Route::get('testimonials', [ContentController::class, 'testimonials'])->name('testimonials.index');
         Route::get('faqs', [ContentController::class, 'faqs'])->name('faqs.index');
         Route::get('blog', [ContentController::class, 'posts'])->name('posts.index');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Enums\BookingStatus;
 use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Room;
@@ -17,7 +18,18 @@ class BookingController extends Controller
     public function index(Request $request)
     {
         return view('dashboard.index', [
-            'bookings' => $request->user()->bookings()->with('bookable')->latest()->paginate(12),
+            'bookings' => $request->user()->bookings()
+                ->with([
+                    'payments',
+                    'bookable' => function ($morphTo) {
+                        $morphTo->morphWith([
+                            Room::class => ['hotel'],
+                            TourPackage::class => ['destination'],
+                        ]);
+                    },
+                ])
+                ->latest()
+                ->paginate(12),
         ]);
     }
 
@@ -43,7 +55,9 @@ class BookingController extends Controller
         $guests = $data['adults'] + ($data['children'] ?? 0);
         $unitPrice = match (true) {
             $bookable instanceof TourPackage => $bookable->effectivePrice(),
-            default => (float) $bookable->price,
+            $bookable instanceof Room => (float) $bookable->price_per_night,
+            $bookable instanceof Transport => (float) $bookable->price,
+            default => (float) ($bookable->price ?? 0),
         };
 
         $booking = Booking::create([
@@ -58,6 +72,12 @@ class BookingController extends Controller
             'payment_method' => $data['payment_method'],
             'status' => BookingStatus::Pending,
             'customer_note' => $data['customer_note'] ?? null,
+        ]);
+
+        $booking->payments()->create([
+            'amount' => $booking->total_price,
+            'method' => $booking->payment_method,
+            'status' => PaymentStatus::Pending,
         ]);
 
         return redirect()->route('dashboard')->with('success', "Booking {$booking->booking_number} was submitted successfully.");

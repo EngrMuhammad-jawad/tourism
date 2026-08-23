@@ -14,7 +14,7 @@ class CatalogController extends Controller
     public function destinations()
     {
         return view('frontend.catalog.destinations', [
-            'destinations' => Destination::active()->orderBy('sort_order')->paginate(12),
+            'destinations' => Destination::active()->with('media')->orderBy('sort_order')->paginate(12),
         ]);
     }
 
@@ -24,15 +24,16 @@ class CatalogController extends Controller
 
         return view('frontend.catalog.destination', [
             'destination' => $destination->load([
-                'packages' => fn ($query) => $query->active()->latest()->take(6),
-                'hotels' => fn ($query) => $query->active()->latest()->take(6),
+                'media',
+                'packages' => fn ($query) => $query->active()->with('media')->latest()->take(6),
+                'hotels' => fn ($query) => $query->active()->with('media')->latest()->take(6),
             ]),
         ]);
     }
 
     public function packages(Request $request)
     {
-        $packages = TourPackage::query()->active()->with('destination');
+        $packages = TourPackage::query()->active()->with(['destination', 'media']);
 
         $packages->when($request->integer('destination'), fn ($query, int $id) => $query->where('destination_id', $id));
         $packages->when($request->filled('min_price'), fn ($query) => $query->where('price', '>=', $request->input('min_price')));
