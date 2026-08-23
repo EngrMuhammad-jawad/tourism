@@ -12,6 +12,7 @@ use App\Models\TourPackage;
 use App\Models\Transport;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
@@ -60,25 +61,29 @@ class BookingController extends Controller
             default => (float) ($bookable->price ?? 0),
         };
 
-        $booking = Booking::create([
-            'user_id' => $request->user()->id,
-            'bookable_type' => $bookable::class,
-            'bookable_id' => $bookable->id,
-            'travel_date' => $data['travel_date'],
-            'adults' => $data['adults'],
-            'children' => $data['children'] ?? 0,
-            'unit_price' => $unitPrice,
-            'total_price' => $unitPrice * $guests,
-            'payment_method' => $data['payment_method'],
-            'status' => BookingStatus::Pending,
-            'customer_note' => $data['customer_note'] ?? null,
-        ]);
+        $booking = DB::transaction(function () use ($request, $data, $bookable, $unitPrice, $guests) {
+            $booking = Booking::create([
+                'user_id' => $request->user()->id,
+                'bookable_type' => $bookable::class,
+                'bookable_id' => $bookable->id,
+                'travel_date' => $data['travel_date'],
+                'adults' => $data['adults'],
+                'children' => $data['children'] ?? 0,
+                'unit_price' => $unitPrice,
+                'total_price' => $unitPrice * $guests,
+                'payment_method' => $data['payment_method'],
+                'status' => BookingStatus::Pending,
+                'customer_note' => $data['customer_note'] ?? null,
+            ]);
 
-        $booking->payments()->create([
-            'amount' => $booking->total_price,
-            'method' => $booking->payment_method,
-            'status' => PaymentStatus::Pending,
-        ]);
+            $booking->payments()->create([
+                'amount' => $booking->total_price,
+                'method' => $booking->payment_method,
+                'status' => PaymentStatus::Pending,
+            ]);
+
+            return $booking;
+        });
 
         return redirect()->route('dashboard')->with('success', "Booking {$booking->booking_number} was submitted successfully.");
     }
