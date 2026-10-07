@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminMenu;
 use App\Models\Album;
+use App\Models\AttractionTicket;
 use App\Models\BlogCategory;
 use App\Models\Booking;
 use App\Models\Comment;
@@ -14,6 +15,7 @@ use App\Models\Faq;
 use App\Models\Hotel;
 use App\Models\NewsletterSubscriber;
 use App\Models\Post;
+use App\Models\ServiceRequest;
 use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\Testimonial;
@@ -29,9 +31,11 @@ class ModuleController extends Controller
     private const MODULES = [
         'destinations' => ['title' => 'Destinations', 'model' => Destination::class, 'required' => ['slug', 'name', 'country'], 'columns' => ['name', 'country', 'city', 'status', 'created_at']],
         'packages' => ['title' => 'Tour Packages', 'model' => TourPackage::class, 'required' => ['destination_id', 'slug', 'name', 'price'], 'columns' => ['name', 'price', 'duration_days', 'status', 'created_at']],
+        'tickets' => ['title' => 'Attraction Tickets', 'model' => AttractionTicket::class, 'required' => ['slug', 'counter_price', 'our_price'], 'columns' => ['title', 'city', 'category', 'counter_price', 'our_price', 'status', 'created_at']],
         'hotels' => ['title' => 'Hotels', 'model' => Hotel::class, 'required' => ['destination_id', 'slug', 'name'], 'columns' => ['name', 'star_rating', 'address', 'status', 'created_at']],
         'transports' => ['title' => 'Transport', 'model' => Transport::class, 'required' => ['type', 'slug', 'name', 'price'], 'columns' => ['name', 'type', 'capacity', 'price', 'status']],
         'bookings' => ['title' => 'Bookings', 'model' => Booking::class, 'required' => ['user_id', 'bookable_type', 'bookable_id', 'travel_date', 'adults', 'unit_price', 'total_price'], 'columns' => ['booking_number', 'travel_date', 'adults', 'total_price', 'payment_method', 'status']],
+        'service-requests' => ['title' => 'Service Requests', 'model' => ServiceRequest::class, 'required' => ['service_type', 'name', 'email', 'phone'], 'columns' => ['reference_no', 'service_type', 'name', 'phone', 'service_date', 'status', 'created_at']],
         'albums' => ['title' => 'Gallery Albums', 'model' => Album::class, 'required' => ['slug', 'name'], 'columns' => ['name', 'slug', 'status', 'sort_order', 'created_at']],
         'testimonials' => ['title' => 'Testimonials', 'model' => Testimonial::class, 'required' => ['name', 'rating', 'content'], 'columns' => ['name', 'country', 'rating', 'status', 'created_at']],
         'blog-categories' => ['title' => 'Blog Categories', 'model' => BlogCategory::class, 'required' => ['slug', 'name'], 'columns' => ['name', 'slug', 'status', 'created_at']],
@@ -132,9 +136,9 @@ class ModuleController extends Controller
                 $rules[$field][] = 'integer';
             } elseif (str_contains($field, 'price') || $field === 'map_lat' || $field === 'map_lng') {
                 $rules[$field][] = 'numeric';
-            } elseif (in_array($field, ['available_from', 'available_to', 'travel_date'])) {
+            } elseif (in_array($field, ['available_from', 'available_to', 'travel_date', 'service_date', 'return_date'])) {
                 $rules[$field][] = 'date';
-            } elseif (in_array($field, ['status', 'is_active', 'is_featured'], true)) {
+            } elseif (in_array($field, ['status', 'is_active', 'is_featured'], true) && ! ($field === 'status' && ($record instanceof ServiceRequest || $record instanceof Booking))) {
                 $rules[$field][] = 'boolean';
             } else {
                 $rules[$field][] = 'string';
@@ -142,7 +146,7 @@ class ModuleController extends Controller
         }
         $data = $request->validate($rules);
         foreach (['status', 'is_active', 'is_featured'] as $boolean) {
-            if (in_array($boolean, $fields, true)) {
+            if (in_array($boolean, $fields, true) && ! ($boolean === 'status' && ($record instanceof ServiceRequest || $record instanceof Booking))) {
                 $data[$boolean] = $request->boolean($boolean);
             }
         }
@@ -150,7 +154,16 @@ class ModuleController extends Controller
             unset($data['password']);
         }
         foreach (method_exists($record, 'getTranslatableAttributes') ? $record->getTranslatableAttributes() : [] as $field) {
-            if (array_key_exists($field, $data)) {
+            $translations = [];
+            foreach (array_keys(config('localization.supported')) as $locale) {
+                $inputName = "{$field}_{$locale}";
+                if ($request->has($inputName)) {
+                    $translations[$locale] = $request->input($inputName);
+                }
+            }
+            if (! empty($translations)) {
+                $data[$field] = $translations;
+            } elseif (array_key_exists($field, $data) && is_string($data[$field])) {
                 $data[$field] = collect(config('localization.supported'))->keys()->mapWithKeys(fn ($locale) => [$locale => $data[$field]])->all();
             }
         }
@@ -158,6 +171,18 @@ class ModuleController extends Controller
             $data['value'] = json_decode($data['value'], true) ?? $data['value'];
         }
         $record->fill($data)->save();
+
+        if ($record instanceof \Spatie\MediaLibrary\HasMedia) {
+            if ($request->hasFile('featured_image')) {
+                $record->clearMediaCollection('featured');
+                $record->addMediaFromRequest('featured_image')->toMediaCollection('featured');
+            }
+            if ($request->hasFile('gallery_images')) {
+                foreach ($request->file('gallery_images') as $file) {
+                    $record->addMedia($file)->toMediaCollection('gallery');
+                }
+            }
+        }
     }
 
     private function record(array $definition, string $id): Model
@@ -184,6 +209,7 @@ class ModuleController extends Controller
         $permission = match ($module) {
             'destinations', 'packages', 'hotels', 'transports', 'users' => "{$module}.{$action}",
             'bookings' => 'bookings.manage',
+            'service-requests' => $action === 'delete' ? 'service-requests.delete' : 'service-requests.manage',
             'albums' => 'gallery.manage',
             'testimonials', 'comments' => "{$module}.moderate",
             'blog-categories', 'tags' => 'blog.'.($action === 'delete' ? 'delete' : ($action === 'create' ? 'create' : 'edit')),

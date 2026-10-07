@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Concerns\HasResponsiveMedia;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Translatable\HasTranslations;
@@ -20,7 +21,7 @@ use Spatie\Translatable\HasTranslations;
 ])]
 class Transport extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, InteractsWithMedia, SoftDeletes;
+    use HasFactory, HasResponsiveMedia, HasTranslations, SoftDeletes;
 
     /** @var array<int, string> Translatable (JSON) attributes. */
     public array $translatable = ['name', 'description'];
@@ -36,7 +37,9 @@ class Transport extends Model implements HasMedia
 
     public function registerMediaCollections(): void
     {
+        $this->addMediaCollection('featured')->singleFile();
         $this->addMediaCollection('images');
+        $this->addMediaCollection('gallery');
     }
 
     public function bookings(): MorphMany

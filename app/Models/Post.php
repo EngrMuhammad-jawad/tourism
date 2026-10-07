@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Concerns\HasResponsiveMedia;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Translatable\HasTranslations;
@@ -22,7 +23,7 @@ use Spatie\Translatable\HasTranslations;
 ])]
 class Post extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, InteractsWithMedia, SoftDeletes;
+    use HasFactory, HasResponsiveMedia, HasTranslations, SoftDeletes;
 
     /** @var array<int, string> Translatable (JSON) attributes. */
     public array $translatable = ['title', 'excerpt', 'content'];

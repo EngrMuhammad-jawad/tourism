@@ -1,8 +1,8 @@
 <aside id="admin-sidebar" class="fixed inset-y-0 start-0 z-40 flex w-72 -translate-x-full flex-col border-e border-white/10 bg-deepblack text-white transition-transform duration-200 lg:translate-x-0" aria-label="Admin navigation">
     <div class="flex h-20 items-center justify-between border-b border-white/10 px-6">
-        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 text-xl font-bold tracking-wide">
-            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gold text-deepblack">U</span>
-            UAE <span class="text-gold">Tourism</span>
+        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 text-base font-bold tracking-wide">
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gold text-deepblack font-black text-sm shadow-md">D</span>
+            <span class="text-white font-extrabold">Dubai<span class="text-gold">TourBook</span></span>
         </a>
         <button type="button" data-admin-close class="rounded-lg p-2 text-gray-400 hover:bg-white/10 hover:text-white lg:hidden" aria-label="Close navigation">&#215;</button>
     </div>

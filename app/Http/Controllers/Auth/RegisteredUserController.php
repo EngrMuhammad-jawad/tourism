@@ -34,6 +34,10 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('verification.notice');
+        return redirect()->route('verification.notice')
+            ->with('tracking_event', [
+                'event' => 'sign_up',
+                'method' => 'email',
+            ]);
     }
 }

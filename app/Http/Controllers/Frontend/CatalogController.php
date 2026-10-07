@@ -7,14 +7,17 @@ use App\Models\Destination;
 use App\Models\Hotel;
 use App\Models\TourPackage;
 use App\Models\Transport;
+use App\Services\SeoService;
 use Illuminate\Http\Request;
 
 class CatalogController extends Controller
 {
     public function destinations()
     {
+        SeoService::setDestinationsIndex();
+
         return view('frontend.catalog.destinations', [
-            'destinations' => Destination::active()->orderBy('sort_order')->paginate(12),
+            'destinations' => Destination::active()->with('media')->orderBy('sort_order')->paginate(12),
         ]);
     }
 
@@ -22,26 +25,32 @@ class CatalogController extends Controller
     {
         abort_unless($destination->status, 404);
 
+        SeoService::setDestination($destination);
+
         return view('frontend.catalog.destination', [
             'destination' => $destination->load([
-                'packages' => fn ($query) => $query->active()->latest()->take(6),
-                'hotels' => fn ($query) => $query->active()->latest()->take(6),
+                'media',
+                'packages' => fn ($query) => $query->active()->with('media')->latest()->take(6),
+                'hotels' => fn ($query) => $query->active()->with('media')->latest()->take(6),
             ]),
         ]);
     }
 
     public function packages(Request $request)
     {
-        $packages = TourPackage::query()->active()->with('destination');
+        $searchTerm = $request->input('q', $request->input('search', $request->input('keyword')));
 
-        $packages->when($request->integer('destination'), fn ($query, int $id) => $query->where('destination_id', $id));
-        $packages->when($request->filled('min_price'), fn ($query) => $query->where('price', '>=', $request->input('min_price')));
-        $packages->when($request->filled('max_price'), fn ($query) => $query->where('price', '<=', $request->input('max_price')));
-        $packages->when($request->integer('duration'), fn ($query, int $days) => $query->where('duration_days', $days));
+        SeoService::setPackagesIndex($searchTerm);
+
+        $packages = TourPackage::query()
+            ->active()
+            ->filter($request->all())
+            ->with(['destination', 'media'])
+            ->orderByDubaiFirst($searchTerm);
 
         return view('frontend.catalog.packages', [
-            'packages' => $packages->latest()->paginate(12)->withQueryString(),
-            'destinations' => Destination::active()->orderBy('sort_order')->get(['id', 'name']),
+            'packages' => $packages->paginate(12)->withQueryString(),
+            'destinations' => Destination::active()->orderBy('sort_order')->get(['id', 'name', 'slug']),
         ]);
     }
 
@@ -49,11 +58,14 @@ class CatalogController extends Controller
     {
         abort_unless($tourPackage->status, 404);
 
+        SeoService::setTourPackage($tourPackage);
+
         return view('frontend.catalog.package', [
-            'tourPackage' => $tourPackage->load(['destination', 'itineraries']),
+            'tourPackage' => $tourPackage->load(['destination', 'itineraries', 'media']),
             'relatedPackages' => TourPackage::active()
                 ->where('destination_id', $tourPackage->destination_id)
                 ->whereKeyNot($tourPackage->getKey())
+                ->with('media')
                 ->take(3)
                 ->get(),
         ]);
@@ -61,10 +73,12 @@ class CatalogController extends Controller
 
     public function hotels(Request $request)
     {
-        $hotels = Hotel::query()->active()->with(['destination', 'amenities']);
+        SeoService::setHotelsIndex();
 
-        $hotels->when($request->integer('destination'), fn ($query, int $id) => $query->where('destination_id', $id));
-        $hotels->when($request->integer('rating'), fn ($query, int $rating) => $query->where('star_rating', '>=', $rating));
+        $hotels = Hotel::query()
+            ->active()
+            ->filter($request->all())
+            ->with(['destination', 'amenities', 'media']);
 
         return view('frontend.catalog.hotels', [
             'hotels' => $hotels->orderByDesc('star_rating')->paginate(12)->withQueryString(),
@@ -76,6 +90,8 @@ class CatalogController extends Controller
     {
         abort_unless($hotel->status, 404);
 
+        SeoService::setHotel($hotel);
+
         return view('frontend.catalog.hotel', [
             'hotel' => $hotel->load(['destination', 'amenities', 'rooms' => fn ($query) => $query->where('status', true)]),
         ]);
@@ -83,6 +99,8 @@ class CatalogController extends Controller
 
     public function transports(Request $request)
     {
+        SeoService::setTransportsIndex();
+
         $transports = Transport::query()->active();
         $transports->when($request->filled('type'), fn ($query) => $query->where('type', $request->string('type')));
         $transports->when($request->filled('capacity'), fn ($query) => $query->where('capacity', '>=', $request->integer('capacity')));
@@ -96,6 +114,14 @@ class CatalogController extends Controller
     {
         abort_unless($transport->status, 404);
 
-        return view('frontend.catalog.transport', compact('transport'));
+        SeoService::setTransport($transport);
+
+        $relatedTransports = Transport::query()
+            ->active()
+            ->where('id', '!=', $transport->id)
+            ->take(3)
+            ->get();
+
+        return view('frontend.catalog.transport', compact('transport', 'relatedTransports'));
     }
 }

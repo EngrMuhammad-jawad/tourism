@@ -20,9 +20,11 @@ Route::middleware(['auth', 'admin.access'])
         $modules = [
             'destinations' => ['destinations', 'destinations.view'],
             'packages' => ['packages', 'packages.view'],
+            'tickets' => ['tickets', 'packages.view'],
             'hotels' => ['hotels', 'hotels.view'],
             'transports' => ['transports', 'transports.view'],
             'bookings' => ['bookings', 'bookings.view'],
+            'service-requests' => ['service-requests', 'service-requests.view'],
             'albums' => ['albums', 'gallery.view'],
             'testimonials' => ['testimonials', 'testimonials.view'],
             'blog-categories' => ['blog-categories', 'blog.view'],
@@ -36,7 +38,6 @@ Route::middleware(['auth', 'admin.access'])
             'users' => ['users', 'users.view'],
             'roles' => ['roles', 'roles.manage'],
             'menus' => ['menus', 'menus.manage'],
-            'settings' => ['settings', 'settings.manage'],
         ];
 
         foreach ($modules as $name => [$uri, $permission]) {
@@ -47,4 +48,10 @@ Route::middleware(['auth', 'admin.access'])
             Route::put("{$uri}/{record}", [ModuleController::class, 'update'])->defaults('module', $name)->middleware("can:{$permission}")->name("{$name}.update");
             Route::delete("{$uri}/{record}", [ModuleController::class, 'destroy'])->defaults('module', $name)->middleware("can:{$permission}")->name("{$name}.destroy");
         }
+
+        // Settings & Dynamic Business Info Management
+        Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->middleware('can:settings.manage')->name('settings.index');
+        Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->middleware('can:settings.manage')->name('settings.update');
+        Route::post('settings/raw', [\App\Http\Controllers\Admin\SettingController::class, 'storeRaw'])->middleware('can:settings.manage')->name('settings.raw.store');
+        Route::delete('settings/raw/{setting}', [\App\Http\Controllers\Admin\SettingController::class, 'destroyRaw'])->middleware('can:settings.manage')->name('settings.raw.destroy');
     });

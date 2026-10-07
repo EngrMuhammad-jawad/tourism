@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('my_account').' | UAE Tourism')
+@section('title', __('my_account').' | ' . \App\Models\Setting::get('general.site_name', 'Dubai Tour Book'))
 
 @section('content')
     <section class="pt-32 pb-24 bg-offwhite min-h-screen">

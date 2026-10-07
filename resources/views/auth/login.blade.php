@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('login').' | UAE Tourism')
+@section('title', __('login').' | ' . \App\Models\Setting::get('general.site_name', 'Dubai Tour Book'))
 
 @section('content')
     <x-auth-card :title="__('welcome_back')">

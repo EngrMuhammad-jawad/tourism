@@ -30,6 +30,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'testimonials.view', 'testimonials.moderate',
             'blog.view', 'blog.create', 'blog.edit', 'blog.delete',
             'comments.moderate',
+            'service-requests.view', 'service-requests.manage', 'service-requests.delete',
             'contacts.view', 'contacts.reply', 'contacts.delete',
             'newsletter.view', 'newsletter.manage',
             'faqs.view', 'faqs.manage',

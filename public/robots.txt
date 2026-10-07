@@ -1,2 +1,49 @@
+# Google AdSense Crawler Permission
+User-agent: Mediapartners-Google
+Allow: /
+
+# Googlebot & All Standards-Compliant Search Engine Crawlers
 User-agent: *
-Disallow:
+Disallow: /admin/
+Disallow: /clear
+Disallow: /set-ads
+Disallow: /*/dashboard
+Disallow: /*/bookings/
+Disallow: /login
+Disallow: /register
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /api/
+Disallow: /*?*sort=
+Disallow: /*?*filter=
+Disallow: /*?*q=
+Disallow: /*?*search=
+Disallow: /*?*utm_
+Disallow: /*?*ref=
+Allow: /
+Allow: /assets/
+Allow: /build/
+Allow: /storage/
+
+# Dedicated Directives for Yandex (Russia / CIS search engine)
+User-agent: Yandex
+Disallow: /admin/
+Disallow: /clear
+Disallow: /set-ads
+Disallow: /*/dashboard
+Disallow: /*/bookings/
+Disallow: /login
+Disallow: /register
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /api/
+Allow: /
+Clean-param: ref /
+Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content /
+Clean-param: sort&filter&q&search /
+
+# XML Sitemaps
+Sitemap: https://dubaitourbook.com/sitemap.xml
+Sitemap: https://dubaitourbook.com/sitemap-tours.xml
+Sitemap: https://dubaitourbook.com/sitemap-destinations.xml
+Sitemap: https://dubaitourbook.com/sitemap-blog.xml

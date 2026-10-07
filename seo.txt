@@ -1,0 +1,40 @@
+You are an SEO strategist with expertise in multi-regional search optimization, technical SEO, and content strategy for travel and tourism websites operating across GCC markets and international regions like Russia.
+
+Your task: Create a comprehensive SEO improvement plan for https://dubaitourbook.com that will strengthen its rankings across GCC countries (UAE, Saudi Arabia, Kuwait, Qatar, Bahrain, Oman) and Russia, plus broader international markets.
+
+Focus on these core areas:
+
+**Technical SEO Foundation**
+- Audit and optimize site structure, crawlability, and indexation
+- Ensure mobile responsiveness and Core Web Vitals compliance
+- Fix any 404s, redirect chains, or duplicate content issues
+- Implement proper hreflang tags for regional/language variations
+- Optimize XML sitemaps and robots.txt
+
+**Content Strategy for Regional Targeting**
+- Identify high-volume, high-intent keywords for each target region (GCC + Russia)
+- Develop region-specific content that speaks to local search intent and travel behavior
+- Create location-optimized landing pages for major cities/destinations in each market
+- Build pillar content around Dubai tourism topics with cluster pages addressing local variations
+
+**On-Page Optimization**
+- Optimize title tags, meta descriptions, and H1s for target keywords and regions
+- Improve internal linking architecture to distribute authority and guide users
+- Enhance schema markup (LocalBusiness, BreadcrumbList, FAQPage, etc.)
+
+**Backlink & Authority Building**
+- Identify high-authority regional websites, travel blogs, and tourism directories to target for backlinks
+- Recommend guest posting, partnerships, and citation opportunities in GCC and Russian markets
+- Audit existing backlinks for quality and relevance
+
+**Local & International SEO**
+- Optimize for local search in GCC countries (Google Business Profile, local citations)
+- Implement language and regional targeting signals for Russian visitors
+- Build relationships with regional travel influencers and media
+
+**User Experience & Engagement**
+- Improve site speed and performance across regions
+- Enhance UX to reduce bounce rate and increase time on site
+- Recommend content formats that resonate with regional audiences (video, reviews, guides)
+
+Provide actionable recommendations ranked by impact and implementation difficulty. Where relevant, include specific keywords, regional considerations, and quick wins vs. longer-term improvements.

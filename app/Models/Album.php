@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Concerns\HasResponsiveMedia;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Translatable\HasTranslations;
@@ -15,7 +16,7 @@ use Spatie\Translatable\HasTranslations;
 #[Fillable(['slug', 'name', 'description', 'status', 'sort_order'])]
 class Album extends Model implements HasMedia
 {
-    use HasTranslations, InteractsWithMedia, SoftDeletes;
+    use HasResponsiveMedia, HasTranslations, SoftDeletes;
 
     /** @var array<int, string> Translatable (JSON) attributes. */
     public array $translatable = ['name', 'description'];

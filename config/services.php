@@ -35,4 +35,20 @@ return [
         ],
     ],
 
+    'gtm' => [
+        'id' => env('GTM_CONTAINER_ID'),
+    ],
+
+    'meta' => [
+        'pixel_id' => env('META_PIXEL_ID'),
+    ],
+
+    'google_ads' => [
+        'conversion_id' => env('GOOGLE_ADS_CONVERSION_ID'),
+    ],
+
+    'adsense' => [
+        'id' => env('ADSENSE_PUBLISHER_ID'),
+    ],
+
 ];

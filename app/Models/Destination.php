@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Concerns\HasResponsiveMedia;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Translatable\HasTranslations;
@@ -19,7 +20,7 @@ use Spatie\Translatable\HasTranslations;
 ])]
 class Destination extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, InteractsWithMedia, SoftDeletes;
+    use HasFactory, HasResponsiveMedia, HasTranslations, SoftDeletes;
 
     /** @var array<int, string> Translatable (JSON) attributes. */
     public array $translatable = ['name', 'description'];

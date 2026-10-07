@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('reset_password').' | UAE Tourism')
+@section('title', __('reset_password').' | ' . \App\Models\Setting::get('general.site_name', 'Dubai Tour Book'))
 
 @section('content')
     <x-auth-card :title="__('reset_password')">

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use App\Concerns\HasResponsiveMedia;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Translatable\HasTranslations;
@@ -14,7 +15,7 @@ use Spatie\Translatable\HasTranslations;
 #[Fillable(['hotel_id', 'name', 'price_per_night', 'capacity', 'quantity', 'status'])]
 class Room extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, InteractsWithMedia;
+    use HasFactory, HasResponsiveMedia, HasTranslations;
 
     /** @var array<int, string> Translatable (JSON) attributes. */
     public array $translatable = ['name'];
@@ -40,5 +41,13 @@ class Room extends Model implements HasMedia
     public function bookings(): MorphMany
     {
         return $this->morphMany(Booking::class, 'bookable');
+    }
+
+    /**
+     * Accessor for polymorphic bookable price.
+     */
+    public function getPriceAttribute(): float
+    {
+        return (float) $this->price_per_night;
     }
 }

@@ -20,9 +20,11 @@ class AdminMenuSeeder extends Seeder
             ['title' => 'Dashboard', 'route' => 'admin.dashboard', 'icon' => 'home', 'permission_name' => 'dashboard.view'],
             ['title' => 'Destinations', 'route' => 'admin.destinations.index', 'icon' => 'map', 'permission_name' => 'destinations.view'],
             ['title' => 'Tour Packages', 'route' => 'admin.packages.index', 'icon' => 'ticket', 'permission_name' => 'packages.view'],
+            ['title' => 'Attraction Tickets', 'route' => 'admin.tickets.index', 'icon' => 'ticket', 'permission_name' => 'packages.view'],
             ['title' => 'Hotels', 'route' => 'admin.hotels.index', 'icon' => 'building', 'permission_name' => 'hotels.view'],
             ['title' => 'Transport', 'route' => 'admin.transports.index', 'icon' => 'truck', 'permission_name' => 'transports.view'],
             ['title' => 'Bookings', 'route' => 'admin.bookings.index', 'icon' => 'calendar', 'permission_name' => 'bookings.view'],
+            ['title' => 'Service Requests', 'route' => 'admin.service-requests.index', 'icon' => 'clipboard', 'permission_name' => 'service-requests.view'],
             ['title' => 'Gallery', 'route' => 'admin.albums.index', 'icon' => 'photo', 'permission_name' => 'gallery.view'],
             ['title' => 'Testimonials', 'route' => 'admin.testimonials.index', 'icon' => 'star', 'permission_name' => 'testimonials.view'],
             ['title' => 'Blog', 'icon' => 'pencil', 'permission_name' => 'blog.view', 'children' => [

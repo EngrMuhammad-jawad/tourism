@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Concerns\HasResponsiveMedia;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Translatable\HasTranslations;
@@ -21,7 +22,7 @@ use Spatie\Translatable\HasTranslations;
 ])]
 class Hotel extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, InteractsWithMedia, SoftDeletes;
+    use HasFactory, HasResponsiveMedia, HasTranslations, SoftDeletes;
 
     /** @var array<int, string> Translatable (JSON) attributes. */
     public array $translatable = ['name', 'description'];
@@ -59,6 +60,14 @@ class Hotel extends Model implements HasMedia
     protected function active(Builder $query): void
     {
         $query->where('status', true);
+    }
+
+    #[Scope]
+    protected function filter(Builder $query, array $filters): void
+    {
+        $query
+            ->when($filters['destination'] ?? null, fn ($q, $dest) => $q->where('destination_id', $dest))
+            ->when($filters['rating'] ?? null, fn ($q, $rating) => $q->where('star_rating', '>=', $rating));
     }
 
     public function getRouteKeyName(): string

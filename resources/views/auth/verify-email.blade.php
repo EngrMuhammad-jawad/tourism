@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('verify_email_title').' | UAE Tourism')
+@section('title', __('verify_email_title').' | ' . \App\Models\Setting::get('general.site_name', 'Dubai Tour Book'))
 
 @section('content')
     <x-auth-card :title="__('verify_email_title')">
