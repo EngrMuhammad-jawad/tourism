@@ -59,6 +59,15 @@ class AttractionTicket extends Model implements HasMedia
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (AttractionTicket $ticket) {
+            if (empty($ticket->attraction_name) && !empty($ticket->title)) {
+                $ticket->attraction_name = $ticket->title;
+            }
+        });
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('featured')->singleFile();

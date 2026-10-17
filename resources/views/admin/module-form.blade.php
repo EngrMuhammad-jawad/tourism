@@ -22,11 +22,13 @@
             @php
                 $label = ucwords(str_replace('_', ' ', $field));
                 $isRequired = in_array($field, $required, true) && !($isEditing && $field === 'password');
-                $isBoolean = in_array($field, ['status', 'is_active', 'is_featured'], true) && !($field === 'status' && ($record instanceof \App\Models\ServiceRequest || $record instanceof \App\Models\Booking));
+                $isBoolean = in_array($field, ['is_active', 'is_featured'], true)
+                    || ($field === 'status' && ! ($record instanceof \App\Models\Post || $record instanceof \App\Models\Comment || $record instanceof \App\Models\Testimonial || $record instanceof \App\Models\ContactMessage || $record instanceof \App\Models\Booking || $record instanceof \App\Models\ServiceRequest));
                 $isLong = in_array($field, ['description', 'summary', 'content', 'excerpt', 'body', 'message', 'customer_note', 'admin_note', 'admin_notes', 'notes', 'reply_message', 'included_services', 'excluded_services', 'value', 'details'], true);
                 $isDate = in_array($field, ['available_from', 'available_to', 'travel_date', 'service_date', 'return_date'], true);
                 $isNumber = str_ends_with($field, '_id') || in_array($field, ['price', 'sale_price', 'unit_price', 'total_price', 'budget', 'map_lat', 'map_lng', 'adults', 'children', 'guests_count', 'capacity', 'quantity', 'duration_days', 'duration_nights', 'star_rating', 'rating', 'sort_order'], true);
                 $value = old($field, in_array($field, $translatable, true) && $record->exists ? $record->getTranslation($field, 'en', false) : $record->getAttribute($field));
+                if ($value instanceof \BackedEnum) $value = $value->value;
                 if (is_array($value)) $value = json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
                 if ($value instanceof \DateTimeInterface) $value = $isDate ? $value->format('Y-m-d') : $value->format('Y-m-d\\TH:i');
             @endphp
@@ -43,11 +45,69 @@
                             <option value="{{ $stKey }}" @selected(old($field, $value) == $stKey)>{{ $stLabel }}</option>
                         @endforeach
                     </select>
+                @elseif($field === 'status' && $record instanceof \App\Models\Post)
+                    <label for="{{ $field }}" class="mb-2 block text-sm font-semibold text-slate-700 tracking-wide">{{ $label }} @if($isRequired)<span class="text-red-600">*</span>@endif</label>
+                    <select id="{{ $field }}" name="{{ $field }}" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-gold focus:bg-white focus:ring-4 focus:ring-gold/20 focus:outline-none transition-all">
+                        @foreach(\App\Enums\PostStatus::cases() as $stCase)
+                            <option value="{{ $stCase->value }}" @selected(old($field, $value) == $stCase->value)>{{ ucfirst($stCase->value) }}</option>
+                        @endforeach
+                    </select>
+                @elseif($field === 'status' && $record instanceof \App\Models\Booking)
+                    <label for="{{ $field }}" class="mb-2 block text-sm font-semibold text-slate-700 tracking-wide">{{ $label }} @if($isRequired)<span class="text-red-600">*</span>@endif</label>
+                    <select id="{{ $field }}" name="{{ $field }}" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-gold focus:bg-white focus:ring-4 focus:ring-gold/20 focus:outline-none transition-all">
+                        @foreach(\App\Enums\BookingStatus::cases() as $stCase)
+                            <option value="{{ $stCase->value }}" @selected(old($field, $value) == $stCase->value)>{{ ucfirst($stCase->value) }}</option>
+                        @endforeach
+                    </select>
+                @elseif($field === 'status' && ($record instanceof \App\Models\Comment || $record instanceof \App\Models\Testimonial))
+                    <label for="{{ $field }}" class="mb-2 block text-sm font-semibold text-slate-700 tracking-wide">{{ $label }} @if($isRequired)<span class="text-red-600">*</span>@endif</label>
+                    <select id="{{ $field }}" name="{{ $field }}" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-gold focus:bg-white focus:ring-4 focus:ring-gold/20 focus:outline-none transition-all">
+                        @foreach(\App\Enums\ModerationStatus::cases() as $stCase)
+                            <option value="{{ $stCase->value }}" @selected(old($field, $value) == $stCase->value)>{{ ucfirst($stCase->value) }}</option>
+                        @endforeach
+                    </select>
+                @elseif($field === 'status' && $record instanceof \App\Models\ContactMessage)
+                    <label for="{{ $field }}" class="mb-2 block text-sm font-semibold text-slate-700 tracking-wide">{{ $label }} @if($isRequired)<span class="text-red-600">*</span>@endif</label>
+                    <select id="{{ $field }}" name="{{ $field }}" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-gold focus:bg-white focus:ring-4 focus:ring-gold/20 focus:outline-none transition-all">
+                        @foreach(\App\Enums\ContactStatus::cases() as $stCase)
+                            <option value="{{ $stCase->value }}" @selected(old($field, $value) == $stCase->value)>{{ ucfirst($stCase->value) }}</option>
+                        @endforeach
+                    </select>
+                @elseif($field === 'payment_method' && $record instanceof \App\Models\Booking)
+                    <label for="{{ $field }}" class="mb-2 block text-sm font-semibold text-slate-700 tracking-wide">{{ $label }} @if($isRequired)<span class="text-red-600">*</span>@endif</label>
+                    <select id="{{ $field }}" name="{{ $field }}" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-gold focus:bg-white focus:ring-4 focus:ring-gold/20 focus:outline-none transition-all">
+                        @foreach(\App\Enums\PaymentMethod::cases() as $pmCase)
+                            <option value="{{ $pmCase->value }}" @selected(old($field, $value) == $pmCase->value)>{{ ucwords(str_replace('_', ' ', $pmCase->value)) }}</option>
+                        @endforeach
+                    </select>
+                @elseif($field === 'type' && $record instanceof \App\Models\Transport)
+                    <label for="{{ $field }}" class="mb-2 block text-sm font-semibold text-slate-700 tracking-wide">{{ $label }} @if($isRequired)<span class="text-red-600">*</span>@endif</label>
+                    <select id="{{ $field }}" name="{{ $field }}" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-gold focus:bg-white focus:ring-4 focus:ring-gold/20 focus:outline-none transition-all">
+                        @foreach(\App\Enums\TransportType::cases() as $tpCase)
+                            <option value="{{ $tpCase->value }}" @selected(old($field, $value) == $tpCase->value)>{{ ucfirst($tpCase->value) }}</option>
+                        @endforeach
+                    </select>
                 @elseif($field === 'service_type' && $record instanceof \App\Models\ServiceRequest)
                     <label for="{{ $field }}" class="mb-2 block text-sm font-semibold text-slate-700 tracking-wide">{{ $label }} @if($isRequired)<span class="text-red-600">*</span>@endif</label>
                     <select id="{{ $field }}" name="{{ $field }}" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-gold focus:bg-white focus:ring-4 focus:ring-gold/20 focus:outline-none transition-all">
                         @foreach(\App\Models\ServiceRequest::SERVICE_TYPES as $sTypeKey => $sTypeLabel)
                             <option value="{{ $sTypeKey }}" @selected(old($field, $value) == $sTypeKey)>{{ $sTypeLabel }}</option>
+                        @endforeach
+                    </select>
+                @elseif($field === 'destination_id')
+                    <label for="{{ $field }}" class="mb-2 block text-sm font-semibold text-slate-700 tracking-wide">{{ $label }} @if($isRequired)<span class="text-red-600">*</span>@endif</label>
+                    <select id="{{ $field }}" name="{{ $field }}" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-gold focus:bg-white focus:ring-4 focus:ring-gold/20 focus:outline-none transition-all">
+                        <option value="">Select Destination</option>
+                        @foreach(\App\Models\Destination::orderBy('name')->get() as $destOption)
+                            <option value="{{ $destOption->id }}" @selected(old($field, $value) == $destOption->id)>{{ $destOption->name }} (ID: {{ $destOption->id }})</option>
+                        @endforeach
+                    </select>
+                @elseif($field === 'blog_category_id')
+                    <label for="{{ $field }}" class="mb-2 block text-sm font-semibold text-slate-700 tracking-wide">{{ $label }} @if($isRequired)<span class="text-red-600">*</span>@endif</label>
+                    <select id="{{ $field }}" name="{{ $field }}" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-gold focus:bg-white focus:ring-4 focus:ring-gold/20 focus:outline-none transition-all">
+                        <option value="">Select Category</option>
+                        @foreach(\App\Models\BlogCategory::orderBy('name')->get() as $catOption)
+                            <option value="{{ $catOption->id }}" @selected(old($field, $value) == $catOption->id)>{{ $catOption->name }} (ID: {{ $catOption->id }})</option>
                         @endforeach
                     </select>
                 @elseif(in_array($field, $translatable, true))

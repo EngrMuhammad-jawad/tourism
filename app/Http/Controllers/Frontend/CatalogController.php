@@ -93,7 +93,12 @@ class CatalogController extends Controller
         SeoService::setHotel($hotel);
 
         return view('frontend.catalog.hotel', [
-            'hotel' => $hotel->load(['destination', 'amenities', 'rooms' => fn ($query) => $query->where('status', true)]),
+            'hotel' => $hotel->load([
+                'media',
+                'destination',
+                'amenities',
+                'rooms' => fn ($query) => $query->where('status', true)->with('media'),
+            ]),
         ]);
     }
 
@@ -101,7 +106,7 @@ class CatalogController extends Controller
     {
         SeoService::setTransportsIndex();
 
-        $transports = Transport::query()->active();
+        $transports = Transport::query()->active()->with('media');
         $transports->when($request->filled('type'), fn ($query) => $query->where('type', $request->string('type')));
         $transports->when($request->filled('capacity'), fn ($query) => $query->where('capacity', '>=', $request->integer('capacity')));
 
@@ -116,8 +121,11 @@ class CatalogController extends Controller
 
         SeoService::setTransport($transport);
 
+        $transport->load('media');
+
         $relatedTransports = Transport::query()
             ->active()
+            ->with('media')
             ->where('id', '!=', $transport->id)
             ->take(3)
             ->get();

@@ -52,7 +52,7 @@
                     @foreach($album->media as $index => $photo)
                         <div class="break-inside-avoid bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100/80 group hover:shadow-2xl transition-all duration-500 relative transform hover:-translate-y-1">
                             <a href="{{ $photo->getUrl() }}" target="_blank" class="block relative overflow-hidden group">
-                                <img src="{{ $photo->getUrl() }}" alt="{{ $album->name }} Photo {{ $index + 1 }}" class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700 loading="lazy">
+                                <img src="{{ $photo->getUrl() }}" alt="{{ $album->name }} Photo {{ $index + 1 }}" class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy">
                                 <div class="absolute inset-0 bg-gradient-to-t from-deepblack/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-5">
                                     <div class="text-white">
                                         <span class="text-xs font-bold text-gold uppercase tracking-wider block mb-1">High Resolution</span>

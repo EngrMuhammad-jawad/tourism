@@ -31,7 +31,7 @@ class ModuleController extends Controller
     private const MODULES = [
         'destinations' => ['title' => 'Destinations', 'model' => Destination::class, 'required' => ['slug', 'name', 'country'], 'columns' => ['name', 'country', 'city', 'status', 'created_at']],
         'packages' => ['title' => 'Tour Packages', 'model' => TourPackage::class, 'required' => ['destination_id', 'slug', 'name', 'price'], 'columns' => ['name', 'price', 'duration_days', 'status', 'created_at']],
-        'tickets' => ['title' => 'Attraction Tickets', 'model' => AttractionTicket::class, 'required' => ['slug', 'counter_price', 'our_price'], 'columns' => ['title', 'city', 'category', 'counter_price', 'our_price', 'status', 'created_at']],
+        'tickets' => ['title' => 'Attraction Tickets', 'model' => AttractionTicket::class, 'required' => ['slug', 'title', 'counter_price', 'our_price'], 'columns' => ['title', 'city', 'category', 'counter_price', 'our_price', 'status', 'created_at']],
         'hotels' => ['title' => 'Hotels', 'model' => Hotel::class, 'required' => ['destination_id', 'slug', 'name'], 'columns' => ['name', 'star_rating', 'address', 'status', 'created_at']],
         'transports' => ['title' => 'Transport', 'model' => Transport::class, 'required' => ['type', 'slug', 'name', 'price'], 'columns' => ['name', 'type', 'capacity', 'price', 'status']],
         'bookings' => ['title' => 'Bookings', 'model' => Booking::class, 'required' => ['user_id', 'bookable_type', 'bookable_id', 'travel_date', 'adults', 'unit_price', 'total_price'], 'columns' => ['booking_number', 'travel_date', 'adults', 'total_price', 'payment_method', 'status']],
@@ -127,29 +127,57 @@ class ModuleController extends Controller
     {
         $fields = $definition['fields'] ?? $record->getFillable();
         $rules = [];
+        $booleanFields = [];
+
         foreach ($fields as $field) {
             $required = in_array($field, $definition['required'], true) && ! ($updating && $field === 'password');
             $rules[$field] = [$required ? 'required' : 'nullable'];
+
+            $isBoolean = in_array($field, ['is_active', 'is_featured'], true)
+                || ($field === 'status' && ! ($record instanceof Post || $record instanceof Comment || $record instanceof Testimonial || $record instanceof ContactMessage || $record instanceof Booking || $record instanceof ServiceRequest));
+
             if ($field === 'email') {
                 $rules[$field][] = 'email';
+            } elseif ($isBoolean) {
+                $rules[$field][] = 'boolean';
+                $booleanFields[] = $field;
+            } elseif ($field === 'status') {
+                if ($record instanceof Post) {
+                    $rules[$field][] = \Illuminate\Validation\Rule::enum(\App\Enums\PostStatus::class);
+                } elseif ($record instanceof Comment || $record instanceof Testimonial) {
+                    $rules[$field][] = \Illuminate\Validation\Rule::enum(\App\Enums\ModerationStatus::class);
+                } elseif ($record instanceof ContactMessage) {
+                    $rules[$field][] = \Illuminate\Validation\Rule::enum(\App\Enums\ContactStatus::class);
+                } elseif ($record instanceof Booking) {
+                    $rules[$field][] = \Illuminate\Validation\Rule::enum(\App\Enums\BookingStatus::class);
+                } elseif ($record instanceof ServiceRequest) {
+                    $rules[$field][] = \Illuminate\Validation\Rule::in(array_keys(\App\Models\ServiceRequest::STATUSES));
+                } else {
+                    $rules[$field][] = 'string';
+                }
+            } elseif ($field === 'payment_method' && $record instanceof Booking) {
+                $rules[$field][] = \Illuminate\Validation\Rule::enum(\App\Enums\PaymentMethod::class);
+            } elseif ($field === 'type' && $record instanceof Transport) {
+                $rules[$field][] = \Illuminate\Validation\Rule::enum(\App\Enums\TransportType::class);
+            } elseif ($field === 'service_type' && $record instanceof ServiceRequest) {
+                $rules[$field][] = \Illuminate\Validation\Rule::in(array_keys(\App\Models\ServiceRequest::SERVICE_TYPES));
             } elseif (str_ends_with($field, '_id') || in_array($field, ['adults', 'children', 'capacity', 'quantity', 'duration_days', 'duration_nights', 'star_rating', 'rating', 'sort_order'])) {
                 $rules[$field][] = 'integer';
-            } elseif (str_contains($field, 'price') || $field === 'map_lat' || $field === 'map_lng') {
+            } elseif (str_contains($field, 'price') || in_array($field, ['map_lat', 'map_lng', 'budget'])) {
                 $rules[$field][] = 'numeric';
             } elseif (in_array($field, ['available_from', 'available_to', 'travel_date', 'service_date', 'return_date'])) {
                 $rules[$field][] = 'date';
-            } elseif (in_array($field, ['status', 'is_active', 'is_featured'], true) && ! ($field === 'status' && ($record instanceof ServiceRequest || $record instanceof Booking))) {
-                $rules[$field][] = 'boolean';
             } else {
                 $rules[$field][] = 'string';
             }
         }
+
         $data = $request->validate($rules);
-        foreach (['status', 'is_active', 'is_featured'] as $boolean) {
-            if (in_array($boolean, $fields, true) && ! ($boolean === 'status' && ($record instanceof ServiceRequest || $record instanceof Booking))) {
-                $data[$boolean] = $request->boolean($boolean);
-            }
+
+        foreach ($booleanFields as $boolean) {
+            $data[$boolean] = $request->boolean($boolean);
         }
+
         if ($updating && empty($data['password'])) {
             unset($data['password']);
         }
@@ -192,8 +220,12 @@ class ModuleController extends Controller
         $routeKeyName = $model->getRouteKeyName();
 
         return $modelClass::query()
-            ->where($routeKeyName, $id)
-            ->orWhere($model->getKeyName(), $id)
+            ->where(function ($query) use ($model, $routeKeyName, $id) {
+                $query->where($routeKeyName, $id);
+                if ($routeKeyName !== $model->getKeyName() && is_numeric($id)) {
+                    $query->orWhere($model->getKeyName(), $id);
+                }
+            })
             ->firstOrFail();
     }
 
@@ -207,7 +239,7 @@ class ModuleController extends Controller
     private function ensureCan(Request $request, string $module, string $action): void
     {
         $permission = match ($module) {
-            'destinations', 'packages', 'hotels', 'transports', 'users' => "{$module}.{$action}",
+            'destinations', 'packages', 'tickets', 'hotels', 'transports', 'users' => ($module === 'tickets' ? 'packages' : $module).".{$action}",
             'bookings' => 'bookings.manage',
             'service-requests' => $action === 'delete' ? 'service-requests.delete' : 'service-requests.manage',
             'albums' => 'gallery.manage',

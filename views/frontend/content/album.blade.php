@@ -19,7 +19,8 @@
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div>
                     <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-gold/40 text-gold text-xs font-extrabold uppercase tracking-widest mb-3">
-                        📷 {{ $album->media->count() }} High-Res Photos
+                        <svg class="w-3.5 h-3.5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <span>{{ $album->media->count() }} High-Res Photos</span>
                     </div>
                     <h1 class="text-3xl font-extrabold md:text-5xl tracking-tight text-white mb-2">
                         {{ $album->name }}
@@ -51,7 +52,7 @@
                     @foreach($album->media as $index => $photo)
                         <div class="break-inside-avoid bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100/80 group hover:shadow-2xl transition-all duration-500 relative transform hover:-translate-y-1">
                             <a href="{{ $photo->getUrl() }}" target="_blank" class="block relative overflow-hidden group">
-                                <img src="{{ $photo->getUrl() }}" alt="{{ $album->name }} Photo {{ $index + 1 }}" class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700 loading="lazy">
+                                <img src="{{ $photo->getUrl() }}" alt="{{ $album->name }} Photo {{ $index + 1 }}" class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy">
                                 <div class="absolute inset-0 bg-gradient-to-t from-deepblack/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-5">
                                     <div class="text-white">
                                         <span class="text-xs font-bold text-gold uppercase tracking-wider block mb-1">High Resolution</span>

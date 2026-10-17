@@ -31,6 +31,11 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole('Super Admin') ? true : null;
         });
 
+        // Set default locale for URL generation when outside localized route middleware
+        \Illuminate\Support\Facades\URL::defaults([
+            'locale' => config('localization.default', 'en'),
+        ]);
+
         // Strip index.php from base URL and force clean URLs
         if (isset($_SERVER['SCRIPT_NAME']) && str_ends_with($_SERVER['SCRIPT_NAME'], 'index.php')) {
             $_SERVER['SCRIPT_NAME'] = preg_replace('#/index\.php$#i', '', $_SERVER['SCRIPT_NAME']) ?: '';

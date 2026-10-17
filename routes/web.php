@@ -154,17 +154,18 @@ Route::prefix('{locale}')
         Route::get('hotels/{hotel}', [CatalogController::class, 'hotel'])->name('hotels.show');
         Route::get('transport', [CatalogController::class, 'transports'])->name('transports.index');
         Route::get('transport/{transport}', [CatalogController::class, 'transport'])->name('transports.show');
-        Route::redirect('transports', 'transport', 301);
-        Route::redirect('transports/{any}', 'transport/{any}', 301)->where('any', '.*');
+        Route::get('transports', fn () => redirect()->route('transports.index', [], 301));
+        Route::get('transports/{any}', fn ($locale, $any) => redirect()->to("/{$locale}/transport/{$any}", 301))->where('any', '.*');
 
         Route::get('gallery', [ContentController::class, 'gallery'])->name('gallery.index');
         Route::get('gallery/{album:slug}', [ContentController::class, 'album'])->name('gallery.show');
+        Route::post('gallery/upload', [ContentController::class, 'uploadGalleryMedia'])->middleware('throttle:6,1')->name('gallery.upload');
         Route::get('testimonials', [ContentController::class, 'testimonials'])->name('testimonials.index');
         Route::get('faqs', [ContentController::class, 'faqs'])->name('faqs.index');
         Route::get('blog', [ContentController::class, 'posts'])->name('posts.index');
         Route::get('blog/{post}', [ContentController::class, 'post'])->name('posts.show');
-        Route::redirect('journal', 'blog', 301);
-        Route::redirect('journal/{any}', 'blog/{any}', 301)->where('any', '.*');
+        Route::get('journal', fn () => redirect()->route('posts.index', [], 301));
+        Route::get('journal/{any}', fn ($locale, $any) => redirect()->to("/{$locale}/blog/{$any}", 301))->where('any', '.*');
         Route::get('contact', [ContentController::class, 'contact'])->name('contact.create');
         Route::post('contact', [ContentController::class, 'storeContact'])->middleware('throttle:6,1')->name('contact.store');
         Route::post('newsletter', [ContentController::class, 'subscribe'])->middleware('throttle:6,1')->name('newsletter.store');
