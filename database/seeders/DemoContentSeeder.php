@@ -1038,6 +1038,41 @@ class DemoContentSeeder extends Seeder
                 }
             }
         }
+
+        $videos = [
+            [
+                'title' => ['en' => 'Dubai Helicopter & City Skyline Tour'],
+                'video_url' => 'https://www.youtube.com/embed/IdejM6wCkxA',
+                'album_id' => $album->id,
+            ],
+            [
+                'title' => ['en' => 'VIP Arabian Desert Safari & Red Dune Bashing'],
+                'video_url' => 'https://www.youtube.com/embed/gTly_Vv-1a4',
+                'album_id' => $album->id,
+            ],
+            [
+                'title' => ['en' => 'Museum of the Future & Downtown Dubai'],
+                'video_url' => 'https://www.youtube.com/embed/RaK5zM7c84k',
+                'album_id' => $album->id,
+            ],
+            [
+                'title' => ['en' => 'Abu Dhabi Sheikh Zayed Grand Mosque Experience'],
+                'video_url' => 'https://www.youtube.com/embed/04Xqj8g-42U',
+                'album_id' => $album->id,
+            ],
+        ];
+
+        foreach ($videos as $order => $videoData) {
+            \App\Models\GalleryVideo::firstOrCreate(
+                ['video_url' => $videoData['video_url']],
+                [
+                    'album_id' => $videoData['album_id'],
+                    'title' => $videoData['title'],
+                    'sort_order' => $order,
+                    'status' => true,
+                ]
+            );
+        }
     }
 
     private function seedPosts(): void

@@ -14,6 +14,7 @@ use App\Services\SeoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
