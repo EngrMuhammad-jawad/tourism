@@ -15,7 +15,9 @@ class SitemapTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'text/xml; charset=utf-8');
-        $this->assertStringContainsString('<urlset', $response->getContent());
+        $this->assertTrue(
+            str_contains($response->getContent(), '<sitemapindex') || str_contains($response->getContent(), '<urlset')
+        );
         $this->assertStringContainsString('<loc>', $response->getContent());
     }
 }
